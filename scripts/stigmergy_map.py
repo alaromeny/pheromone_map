@@ -44,7 +44,7 @@ class StigmergyMap:
         self.stigmergyMap_groundExploration = np.zeros(( self.stigmergyMap_height,  self.stigmergyMap_width), dtype=np.uint16)
         self.stigmergyMap_walls = np.zeros(( self.stigmergyMap_height,  self.stigmergyMap_width), dtype=np.uint16)
 
-        self.diffusion_sigma = 0.75
+        self.diffusion_sigma = 0.6
         self.diffusion_rate = 10
         self.diffusion_counter = 0
 
