@@ -62,6 +62,8 @@ def getKey():
     tty.setraw(sys.stdin.fileno())
     select.select([sys.stdin], [], [], 0)
     key = sys.stdin.read(1)
+    print('key')
+    print(key)
     termios.tcsetattr(sys.stdin, termios.TCSADRAIN, settings)
     return key
 def vels(speed,turn):
