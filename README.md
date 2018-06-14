@@ -15,22 +15,34 @@ environment_width = 100
 environment_height = 100
 ```
 
-- how often we want to update robot's local stigmergy
+- how often we want to update robot's local stigmergy (integer in Hz)
 ```
 publisher_rate = 1
 ```
-- number of ground robots
+- number of ground robots (integer)
 ```
-number_of_robots = 4
+number_of_robots = 3
 ```
-- resolution of the cells in the stigmergy map
+- resolution of the cells in the stigmergy map and  (in meters)
 ```
 map_resolution = 0.25
 ```
+- the radius of the trail of a single robot leaves on the pheromone map (in meters)
+```
+trail_radius = 0.8
+```
+- the value of the robot's trail in the matrix (integer)
+```
+robot_trail_value = 75
+```
+- the value of the obstacles trail in the matrix (integer)
+```
+wall_trail_value = 255
+```
 - how many cells in each direction do our ground robots want to see - I haven't tested this if they are not equal
 ```
-localResolution_x = 8
-localResolution_y = 8
+local_resolution_x = 8
+local_resolution_y = 8
 ```
 - These are diffusion parameters (Sigma is for gaussian blurr)
 ```
