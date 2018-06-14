@@ -39,11 +39,7 @@ robot_trail_value = 75
 ```
 wall_trail_value = 255
 ```
-- how many cells in each direction do our ground robots want to see - I haven't tested this if they are not equal
-```
-local_resolution_x = 8
-local_resolution_y = 8
-```
+
 - These are diffusion parameters (Sigma is for gaussian blurr)
 ```
 diffusion_sigma = 0.75
