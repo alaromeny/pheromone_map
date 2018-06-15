@@ -215,45 +215,33 @@ class StigmergyMap:
         return missing
     
     def publisher( self):
-        if self.mapsMissing():
-            rospy.loginfo("EMPTY!")
-            for i in range(0, self.number_of_robots):
-                tmp = [[]]
-                #create the message
-                message = Int16MultiArray()
-                #it's a message of 5*5 even though it's flattened, so this is length 25 at steps of 5
-                message.layout.dim = [MultiArrayDimension("data", 0,  0)]
-                message.data = tmp
-                myPublisher = self.pub[i]
-                # rospy.loginfo("Sent message about robot "+ str(i))
-                myPublisher.publish(message)
-        else:
-            local = self.localMapStore[0]
-            print local
-            self.diffuse()
-            # if self.diffusion_counter == self.diffusion_rate:
-            #     self.diffusion_counter = 0
-            #     self.diffuse()
-            self.diffusion_counter = self.diffusion_counter + 1
-            for i in range(0, self.number_of_robots):
-                localStigmergyMap = self.localMapStore[i]
-                origShape = np.shape(localStigmergyMap)
+        local = self.localMapStore[0]
+        print local
+        self.diffuse()
+        # if self.diffusion_counter == self.diffusion_rate:
+        #     self.diffusion_counter = 0
+        #     self.diffuse()
+        self.diffusion_counter = self.diffusion_counter + 1
+        for i in range(0, self.number_of_robots):
+            localStigmergyMap = self.localMapStore[i]
+            origShape = np.shape(localStigmergyMap)
+            if localStigmergyMap != []:
                 #has to be flat to send as message (no idea why)
                 localStigmergyMap = localStigmergyMap.flatten()
-                flatShape = np.shape(localStigmergyMap)
-                tmp = []
-                #message also doesn't like np integers so create a temp array in which to store ints
-                for k in range(0,flatShape[0]):
-                    data = int(localStigmergyMap[k])
-                    tmp.append(data)
-                #create the message
-                message = Int16MultiArray()
-                #it's a message of 5*5 even though it's flattened, so this is length 25 at steps of 5
-                message.layout.dim = [MultiArrayDimension("data", flatShape[0],  origShape[0])]
-                message.data = tmp
-                myPublisher = self.pub[i]
-                # rospy.loginfo("Sent message about robot "+ str(i))
-                myPublisher.publish(message)
+            flatShape = np.shape(localStigmergyMap)
+            tmp = []
+            #message also doesn't like np integers so create a temp array in which to store ints
+            for k in range(0,flatShape[0]):
+                data = int(localStigmergyMap[k])
+                tmp.append(data)
+            #create the message
+            message = Int16MultiArray()
+            #it's a message of 5*5 even though it's flattened, so this is length 25 at steps of 5
+            message.layout.dim = [MultiArrayDimension("data", flatShape[0],  origShape[0])]
+            message.data = tmp
+            myPublisher = self.pub[i]
+            # rospy.loginfo("Sent message about robot "+ str(i))
+            myPublisher.publish(message)
 
 
     def listener( self):
