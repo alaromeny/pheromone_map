@@ -87,8 +87,6 @@ class StigmergyMap:
             lower_y = 0
 
         localStigmergyMap = np.array(self.stigmergyMap_groundExploration[lower_y:upper_y, lower_x:upper_x])
-        # localStigmergyMap = self.stigmergyMap_groundExploration[lower_y:upper_y, lower_x:upper_x]
-        # print localStigmergyMap
         wallMap = self.stigmergyMap_walls[lower_y:upper_y, lower_x:upper_x]
         wallMap = self.findWalls(wallMap)
         localStigmergyMap = self.trimWalls(localStigmergyMap, wallMap)
@@ -111,7 +109,6 @@ class StigmergyMap:
         for n in range(0,4):
             for i in range(midpoint+1, shape[0]):
                 b = (walls[i] == np.uint16(255))
-                # print b
                 wallCount = 0
                 for j in range(0, shape[1]):
                     if b[j] == False:
@@ -119,7 +116,6 @@ class StigmergyMap:
                     elif b[j] == True:
                         wallCount = wallCount + 1
                 if wallCount == shape[1]:
-                    # print "Wall Found"
                     walls[i:shape[0]] = np.uint16(255)
             walls = np.rot90(walls)
 
@@ -163,8 +159,6 @@ class StigmergyMap:
         shape = array.shape
         stride_w = shape[0] /  self.stigmergyMap_width
         stride_h = shape[1] /  self.stigmergyMap_height
-        # print stride_w
-        # print stride_h
 
         for i in range(0,  self.stigmergyMap_width):
             start_i = i * stride_w
@@ -176,11 +170,6 @@ class StigmergyMap:
                 maxCell =  np.amax(subArr)
                 if maxCell > 50:
                     self.stigmergyMap_walls[i,j] = np.uint16(255)
-                    # if i > 90 and i < 100:
-                        # print (i,j)
-
-                    
-
 
 
     def callBackOdom( self, data):
@@ -194,12 +183,9 @@ class StigmergyMap:
         mapX, mapY = self.transformRoboPosToPheromoneMap( rawX, rawY)
         self.leaveTrail( mapX, mapY)
         self.storeLocalArea( mapX, mapY, robotID)
-        # if robotID == 0:
-        #     local = self.localMapStore[0]
-        #     print local
-            # print "Robot Pos " + str(rawX) + " " + str(rawY)
-            # print "Stig Pos " + str(mapX) + " " + str(mapY)
-
+        if robotID == 0:
+            local = self.localMapStore[0]
+            
     def callBackMap( self, data):
         self.robot_map = Map( data)
         self.robot_map.chopGrid()
@@ -210,6 +196,7 @@ class StigmergyMap:
     def publisher( self):
         if self.localMapStore[0] == []:
             rospy.loginfo("EMPTY!")
+            print "EMPTY LOCAL STORES"
         else:
             local = self.localMapStore[0]
             print local
@@ -251,8 +238,8 @@ class StigmergyMap:
         # rospy.Subscriber(robotName, Odometry, callback)
 
         for i in range(0, self.number_of_robots):
-            robotName_odom = 'robot' + str(i) + '/odom'
-            robotName_map = 'robot' + str(i) + '/map'
+            robotName_odom = '/robot' + str(i) + '/odom'
+            robotName_map = '/robot' + str(i) + '/map'
             self.robots.append( Robot(0.5,0.5,i))
             rospy.Subscriber(robotName_odom, Odometry, self.callBackOdom)
             rospy.Subscriber(robotName_map, OccupancyGrid, self.callBackMap)
@@ -260,8 +247,5 @@ class StigmergyMap:
         while not rospy.is_shutdown():
 
             self.publisher()
-            # print stigmergyMap
-            # print time.time() - starttime
-
             r = rospy.Rate( self.publisher_rate) # 10hz
             r.sleep()
