@@ -217,6 +217,16 @@ class StigmergyMap:
     def publisher( self):
         if self.mapsMissing():
             rospy.loginfo("EMPTY!")
+            for i in range(0, self.number_of_robots):
+                tmp = [[]]
+                #create the message
+                message = Int16MultiArray()
+                #it's a message of 5*5 even though it's flattened, so this is length 25 at steps of 5
+                message.layout.dim = [MultiArrayDimension("data", 0,  0)]
+                message.data = tmp
+                myPublisher = self.pub[i]
+                # rospy.loginfo("Sent message about robot "+ str(i))
+                myPublisher.publish(message)
         else:
             local = self.localMapStore[0]
             print local
