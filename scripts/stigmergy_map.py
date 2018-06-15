@@ -22,9 +22,9 @@ class StigmergyMap:
         self.environment_width = 100
         self.environment_height = 100
         # how often to publish the local maps of each robot (Hz)
-        self.publisher_rate = 1
+        self.publisher_rate = 5
         #This specifies the name of the robot from range(a, number_of_robots)
-        self.number_of_robots = 4
+        self.number_of_robots = 3
         #This specifies the size of the stigmergy map
         self.map_resolution = 0.25
 
@@ -197,23 +197,29 @@ class StigmergyMap:
         missing = False
         for i in range(0,  self.number_of_robots):
             if self.localMapStore[i] == []:
+                print "THE MISSING MAP HAS ID NUMBER: " + str(i)
                 missing = True
         return missing
     
     def publisher( self):
         if self.mapsMissing():
             rospy.loginfo("EMPTY!")
-            print "EMPTY LOCAL STORES"
+            print "EMPTY LOCAL STORES EMPTY LOCAL STORES EMPTY LOCAL STORES EMPTY LOCAL STORES EMPTY LOCAL STORES EMPTY LOCAL STORES EMPTY LOCAL STORES "
+
         else:
             local = self.localMapStore[0]
-            print local
+            # print local
             self.diffuse()
             # if self.diffusion_counter == self.diffusion_rate:
             #     self.diffusion_counter = 0
             #     self.diffuse()
             self.diffusion_counter = self.diffusion_counter + 1
+            print "------------------------------------------------------"
             for i in range(0, self.number_of_robots):
                 localStigmergyMap = self.localMapStore[i]
+                print localStigmergyMap
+                print "------------------------------------------------------"
+
                 origShape = np.shape(localStigmergyMap)
                 #has to be flat to send as message (no idea why)
                 localStigmergyMap = localStigmergyMap.flatten()
@@ -231,6 +237,9 @@ class StigmergyMap:
                 myPublisher = self.pub[i]
                 # rospy.loginfo("Sent message about robot "+ str(i))
                 myPublisher.publish(message)
+            print "****************************************************************"
+            print "****************************************************************"
+
 
 
     def listener( self):
@@ -250,6 +259,7 @@ class StigmergyMap:
             self.robots.append( Robot(0.5,0.5,i))
             rospy.Subscriber(robotName_odom, Odometry, self.callBackOdom)
             rospy.Subscriber(robotName_map, OccupancyGrid, self.callBackMap)
+
 
         while not rospy.is_shutdown():
 
