@@ -206,9 +206,16 @@ class StigmergyMap:
         self.transformMapToPheromones(self.robot_map.chopMap)
         np.set_printoptions(threshold=np.nan)
         # print stigmergyMap
-
+    
+    def mapsMissing( self):
+        missing = False
+        for i in range(0,  self.number_of_robots):
+            if self.localMapStore[i] == []:
+                missing = True
+        return missing
+    
     def publisher( self):
-        if self.localMapStore[0] == []:
+        if self.mapsMissing():
             rospy.loginfo("EMPTY!")
         else:
             local = self.localMapStore[0]
