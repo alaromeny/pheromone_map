@@ -19,14 +19,43 @@ from map import Map
 class StigmergyMap:
 
     def __init__(self):
-        self.environment_width = 100
-        self.environment_height = 100
+        rospy.init_node('pheromone_map', anonymous=True)
+
+        robotID = rospy.get_param('robot_ID')
+
+        
+        
+        
+        
+        
+        
+        rospy.get_param('robot_trail_value')
+        rospy.get_param('wall_trail_value')
+        rospy.get_param('diffusion_sigma')
+        rospy.get_param('diffusion_rate')
+
+
+        rospy.set_param('env_width', 100)
+        rospy.set_param('env_height', 100)
+        rospy.set_param('update_rate', 5)
+        rospy.set_param('n_robots', 3)
+        rospy.set_param('pheromone_resolution', 0.25)
+        rospy.set_param('robot_trail_radius', 8)
+        rospy.set_param('robot_trail_value', )
+        rospy.set_param('wall_trail_value', )
+        rospy.set_param('diffusion_sigma', )
+        rospy.set_param('diffusion_rate', )
+
+
+
+        self.environment_width = rospy.get_param('env_width')
+        self.environment_height = rospy.get_param('env_height')
         # how often to publish the local maps of each robot (Hz)
-        self.publisher_rate = 5
+        self.publisher_rate = rospy.get_param('update_rate')
         #This specifies the name of the robot from range(a, number_of_robots)
-        self.number_of_robots = 3
+        self.number_of_robots = rospy.get_param('n_robots')
         #This specifies the size of the stigmergy map
-        self.map_resolution = 0.25
+        self.map_resolution = rospy.get_param('pheromone_resolution')
 
         self.stigmergyMap_width = int( self.environment_width /  self.map_resolution)
         self.stigmergyMap_height = int( self.environment_height /  self.map_resolution)
@@ -34,8 +63,8 @@ class StigmergyMap:
         self.x_transform = 50
         self.y_transform = 50
         #This specifies by how many squares in the x and y direction do we want to sense local pheromones
-        self.localResolution_x = 8
-        self.localResolution_y = 8
+        self.localResolution_x = rospy.get_param('robot_trail_radius')
+        self.localResolution_y = rospy.get_param('robot_trail_radius')
         self.grid_map = OccupancyGrid()
         self.robot_map = Map( self.grid_map)
         self.map_initiated = False
@@ -243,7 +272,6 @@ class StigmergyMap:
 
 
     def listener( self):
-        rospy.init_node('pheromone_map', anonymous=True)
         # In ROS, nodes are uniquely named. If two nodes with the same
         # name are launched, the previous one is kicked off. The
         # anonymous=True flag means that rospy will choose a unique
