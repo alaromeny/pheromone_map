@@ -1,10 +1,7 @@
 #!/usr/bin/env python2.7
 import rospy
-from std_msgs.msg import String
-from std_msgs.msg import Int16MultiArray, MultiArrayDimension
-from nav_msgs.msg import Odometry
-from nav_msgs.msg import OccupancyGrid
-
+from std_msgs.msg import String, Float32, Int16MultiArray, MultiArrayDimension
+from nav_msgs.msg import Odometry, OccupancyGrid
 
 from scipy.ndimage import gaussian_filter
 import numpy as np
@@ -21,20 +18,16 @@ class StigmergyMap:
     def __init__(self):
         rospy.init_node('pheromone_map', anonymous=True)
         
-        # rospy.get_param('~robot_trail_value')
-        # rospy.get_param('~wall_trail_value')
-        
 
 
-
-        self.environment_width = rospy.get_param('~env_width')
-        self.environment_height = rospy.get_param('~env_height')
+        self.environment_width = rospy.get_param('~env_width', 100)
+        self.environment_height = rospy.get_param('~env_height', 100)
         # how often to publish the local maps of each robot (Hz)
-        self.publisher_rate = rospy.get_param('~update_rate')
+        self.publisher_rate = rospy.get_param('~update_rate', 10)
         #This specifies the name of the robot from range(a, number_of_robots)
-        self.number_of_robots = rospy.get_param('~n_robots')
+        self.number_of_robots = rospy.get_param('~n_robots', 1)
         #This specifies the size of the stigmergy map
-        self.map_resolution = rospy.get_param('~pheromone_resolution')
+        self.map_resolution = rospy.get_param('~pheromone_resolution', 0.25)
 
         self.stigmergyMap_width = int( self.environment_width /  self.map_resolution)
         self.stigmergyMap_height = int( self.environment_height /  self.map_resolution)
@@ -42,8 +35,15 @@ class StigmergyMap:
         self.x_transform = 50
         self.y_transform = 50
         #This specifies by how many squares in the x and y direction do we want to sense local pheromones
-        self.localResolution_x = int( rospy.get_param('~robot_trail_radius') / self.map_resolution)
-        self.localResolution_y = int( rospy.get_param('~robot_trail_radius') / self.map_resolution)
+        self.localResolution_x = int( rospy.get_param('~pheromone_sensing_radius', 1.6) / self.map_resolution)
+        self.localResolution_y = int( rospy.get_param('~pheromone_sensing_radius', 1.6) / self.map_resolution)
+
+        self.robotTrail_width = int( rospy.get_param('~robot_trail_radius',0.8) / self.map_resolution)
+        self.robotTrail_height = int( rospy.get_param('~robot_trail_radius',0.8) / self.map_resolution)
+
+        self.robotPheromoneStrength = rospy.get_param('~robot_trail_value', 75)
+        self.wallPheromoneStrength = rospy.get_param('~wall_trail_value', 255)
+
         self.grid_map = OccupancyGrid()
         self.robot_map = Map( self.grid_map)
         self.map_initiated = False
@@ -52,8 +52,8 @@ class StigmergyMap:
         self.stigmergyMap_groundExploration = np.zeros(( self.stigmergyMap_height,  self.stigmergyMap_width), dtype=np.uint16)
         self.stigmergyMap_walls = np.zeros(( self.stigmergyMap_height,  self.stigmergyMap_width), dtype=np.uint16)
 
-        self.diffusion_sigma = rospy.get_param('~diffusion_sigma')
-        self.diffusion_rate = rospy.get_param('~diffusion_rate')
+        self.diffusion_sigma = rospy.get_param('~diffusion_sigma', 0.5)
+        self.diffusion_rate = rospy.get_param('~diffusion_rate', 100)
         self.diffusion_counter = 0
 
         np.set_printoptions(threshold=np.nan)
@@ -106,8 +106,8 @@ class StigmergyMap:
         shape = walls.shape
         for i in range(0, shape[0]):
             for j in range(0, shape[1]):
-                if walls[i,j] == 255:
-                    stigmergy[i,j] = 255
+                if walls[i,j] == self.wallPheromoneStrength:
+                    stigmergy[i,j] = self.wallPheromoneStrength
 
         return stigmergy
 
@@ -116,7 +116,7 @@ class StigmergyMap:
         midpoint = int(shape[0]/2)
         for n in range(0,4):
             for i in range(midpoint+1, shape[0]):
-                b = (walls[i] == np.uint16(255))
+                b = (walls[i] == np.uint16(self.wallPheromoneStrength))
                 wallCount = 0
                 for j in range(0, shape[1]):
                     if b[j] == False:
@@ -124,7 +124,7 @@ class StigmergyMap:
                     elif b[j] == True:
                         wallCount = wallCount + 1
                 if wallCount == shape[1]:
-                    walls[i:shape[0]] = np.uint16(255)
+                    walls[i:shape[0]] = np.uint16(self.wallPheromoneStrength)
             walls = np.rot90(walls)
 
         return walls
@@ -157,10 +157,22 @@ class StigmergyMap:
     def leaveTrail( self, x_robot, y_robot):
         x = int(math.floor(x_robot))
         y = int(math.floor(y_robot))
-        radius = int(0.75/ self.map_resolution)
-        print 'radius'
-        print radius
-        self.stigmergyMap_groundExploration[ (y-radius+1):(y+radius), (x-radius+1):(x+radius)] = np.uint16(100)
+
+        x_start = x - self.robotTrail_width
+        y_start = y - self.robotTrail_height
+        x_end = x + self.robotTrail_width
+        y_end = y + self.robotTrail_height
+
+        if x_start < 0:
+            x_start=0
+        if y_start < 0:
+            y_start=0
+        if x_end >= self.stigmergyMap_width:
+            x_end=self.stigmergyMap_width
+        if y_end >= self.stigmergyMap_height:
+            y_end=self.stigmergyMap_height
+
+        self.stigmergyMap_groundExploration[ y_start:y_end, x_start:x_end] = self.stigmergyMap_groundExploration[ y_start:y_end, x_start:x_end] + np.uint16(self.robotPheromoneStrength)
 
     def transformMapToPheromones( self, array):
 
@@ -178,7 +190,7 @@ class StigmergyMap:
                 subArr = array[start_i:end_i, start_j:end_j]
                 maxCell =  np.amax(subArr)
                 if maxCell > 50:
-                    self.stigmergyMap_walls[i,j] = np.uint16(255)
+                    self.stigmergyMap_walls[i,j] = np.uint16(self.wallPheromoneStrength)
 
 
     def callBackOdom( self, data):
@@ -200,7 +212,6 @@ class StigmergyMap:
         self.robot_map.chopGrid()
         self.transformMapToPheromones(self.robot_map.chopMap)
         np.set_printoptions(threshold=np.nan)
-        # print stigmergyMap
     
     def mapsMissing( self):
         missing = False
@@ -212,23 +223,18 @@ class StigmergyMap:
     
     def publisher( self):
         if self.mapsMissing():
-            rospy.loginfo("EMPTY!")
             print "EMPTY LOCAL STORES EMPTY LOCAL STORES EMPTY LOCAL STORES EMPTY LOCAL STORES EMPTY LOCAL STORES EMPTY LOCAL STORES EMPTY LOCAL STORES "
 
         else:
             local = self.localMapStore[0]
-            # print local
-            self.diffuse()
-            # if self.diffusion_counter == self.diffusion_rate:
-            #     self.diffusion_counter = 0
-            #     self.diffuse()
-            self.diffusion_counter = self.diffusion_counter + 1
-            print "------------------------------------------------------"
+            if self.diffusion_counter == self.diffusion_rate:
+                self.diffuse()
+                self.diffusion_counter = 0
+            else: 
+                self.diffusion_counter = self.diffusion_counter + 1
             for i in range(0, self.number_of_robots):
                 localStigmergyMap = self.localMapStore[i]
-                print localStigmergyMap
-                print "------------------------------------------------------"
-
+                print "ROBOT ID: " + str(i)
                 origShape = np.shape(localStigmergyMap)
                 #has to be flat to send as message (no idea why)
                 localStigmergyMap = localStigmergyMap.flatten()
@@ -244,12 +250,19 @@ class StigmergyMap:
                 message.layout.dim = [MultiArrayDimension("data", flatShape[0],  origShape[0])]
                 message.data = tmp
                 myPublisher = self.pub[i]
-                # rospy.loginfo("Sent message about robot "+ str(i))
                 myPublisher.publish(message)
-            print "****************************************************************"
-            print "****************************************************************"
 
-
+    def get_robot_names( self):
+        robot_names = set()
+        for topic in rospy.get_published_topics():
+            topic_name = topic[0]
+            if "camera" in topic_name:
+                robot_names.add(topic_name.split("/")[1])
+        
+        robot_names = sorted(list(robot_names))
+        rospy.loginfo("Found Robots: %s" % robot_names)
+        print "Found Robots: %s" % robot_names
+        return robot_names
 
     def listener( self):
         # In ROS, nodes are uniquely named. If two nodes with the same
