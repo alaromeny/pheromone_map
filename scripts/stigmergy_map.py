@@ -61,11 +61,21 @@ class StigmergyMap:
         self.robots = []
         self.localMapStore = []
 
-        for i in range(0,  self.number_of_robots):
-            self.localMapStore.append([])
-            pubName = "localPheromone" + str(i)
+        # for i in range(0,  self.number_of_robots):
+        #     self.localMapStore.append([])
+        #     pubName = "localPheromone" + str(i)
+        #     temp = rospy.Publisher(pubName, Int16MultiArray, queue_size=10)
+        #     self.pub.append(temp)
+    
+        self.robot_names = self.get_robot_names()
+
+        n_robots = len(self.robot_names)
+        for i in range(0, n_robots):
+            pubName = "localPheromone/" + str(self.robot_names[i])
             temp = rospy.Publisher(pubName, Int16MultiArray, queue_size=10)
             self.pub.append(temp)
+            print "Created a publisher to: " + str(pubName)
+
 
 
     def getRobotID( self, child_frame_id):
