@@ -18,6 +18,8 @@ class StigmergyMap:
     def __init__(self):
         rospy.init_node('pheromone_map', anonymous=True)
         
+
+
         self.environment_width = rospy.get_param('~env_width', 100)
         self.environment_height = rospy.get_param('~env_height', 100)
         # how often to publish the local maps of each robot (Hz)
@@ -170,7 +172,7 @@ class StigmergyMap:
         if y_end >= self.stigmergyMap_height:
             y_end=self.stigmergyMap_height
 
-        self.stigmergyMap_groundExploration[ y_start:y_end, x_start:x_end] = np.uint16(self.robotPheromoneStrength)
+        self.stigmergyMap_groundExploration[ y_start:y_end, x_start:x_end] = self.stigmergyMap_groundExploration[ y_start:y_end, x_start:x_end] + np.uint16(self.robotPheromoneStrength)
 
     def transformMapToPheromones( self, array):
 
@@ -232,6 +234,7 @@ class StigmergyMap:
                 self.diffusion_counter = self.diffusion_counter + 1
             for i in range(0, self.number_of_robots):
                 localStigmergyMap = self.localMapStore[i]
+                print "ROBOT ID: " + str(i)
                 origShape = np.shape(localStigmergyMap)
                 #has to be flat to send as message (no idea why)
                 localStigmergyMap = localStigmergyMap.flatten()
@@ -248,6 +251,18 @@ class StigmergyMap:
                 message.data = tmp
                 myPublisher = self.pub[i]
                 myPublisher.publish(message)
+
+    def get_robot_names( self):
+        robot_names = set()
+        for topic in rospy.get_published_topics():
+            topic_name = topic[0]
+            if "camera" in topic_name:
+                robot_names.add(topic_name.split("/")[1])
+        
+        robot_names = sorted(list(robot_names))
+        rospy.loginfo("Found Robots: %s" % robot_names)
+        print "Found Robots: %s" % robot_names
+        return robot_names
 
     def listener( self):
         # In ROS, nodes are uniquely named. If two nodes with the same
