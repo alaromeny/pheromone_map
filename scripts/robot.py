@@ -1,7 +1,7 @@
 from geometry_msgs.msg import Twist
 
 class Robot:
-    def __init__(self, width = 1, height = 1, ID = 0):
+    def __init__(self, width = 1, height = 1, ID = 0, name="ground"):
         self.width = width
         self.height = height
         self.radius = int(max(width, height) / 2)
@@ -18,6 +18,7 @@ class Robot:
         self.goalTheta = 0
         self.originalTheta = 0
         self.forwardDistance = 0
+        self.nameSpace = name
 
 
     def getPosition():
