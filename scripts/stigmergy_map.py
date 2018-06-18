@@ -25,7 +25,6 @@ class StigmergyMap:
         # how often to publish the local maps of each robot (Hz)
         self.publisher_rate = rospy.get_param('~update_rate', 10)
         #This specifies the name of the robot from range(a, number_of_robots)
-        self.number_of_robots = rospy.get_param('~n_robots', 1)
         #This specifies the size of the stigmergy map
         self.map_resolution = rospy.get_param('~pheromone_resolution', 0.25)
 
@@ -42,7 +41,7 @@ class StigmergyMap:
         self.robotTrail_height = int( rospy.get_param('~robot_trail_radius',0.8) / self.map_resolution)
 
         self.robotPheromoneStrength = rospy.get_param('~robot_trail_value', 75)
-        self.wallPheromoneStrength = rospy.get_param('~wall_trail_value', 255)
+        self.wallPheromoneStrength = rospy.get_param('~wall_trail_value', 32700)
 
         self.grid_map = OccupancyGrid()
         self.robot_map = Map( self.grid_map)
@@ -61,30 +60,41 @@ class StigmergyMap:
         self.robots = []
         self.localMapStore = []
 
-        # for i in range(0,  self.number_of_robots):
-        #     self.localMapStore.append([])
-        #     pubName = "localPheromone" + str(i)
-        #     temp = rospy.Publisher(pubName, Int16MultiArray, queue_size=10)
-        #     self.pub.append(temp)
-    
+   
         self.robot_names = self.get_robot_names()
 
-        n_robots = len(self.robot_names)
-        for i in range(0, n_robots):
-            pubName = "localPheromone/" + str(self.robot_names[i])
+        self.number_of_robots = len(self.robot_names)
+        for i in range(0, self.number_of_robots):
+            tempRobot_name = str(self.robot_names[i])
+            pubName = "localPheromone/" + tempRobot_name
             temp = rospy.Publisher(pubName, Int16MultiArray, queue_size=10)
             self.pub.append(temp)
             print "Created a publisher to: " + str(pubName)
 
+            self.robots.append( Robot(0.5,0.5,i,tempRobot_name))
+
+            robotName_odom = tempRobot_name + '/odom'
+            rospy.Subscriber(robotName_odom, Odometry, self.callBackOdom)
+            print "Created a Subscriber to: " + str(robotName_odom)
+
+            robotName_map = tempRobot_name + '/map'
+            rospy.Subscriber(robotName_map, OccupancyGrid, self.callBackMap)
+            print "Created a Subscriber to: " + str(robotName_map)
+
+            self.localMapStore.append([])
 
 
-    def getRobotID( self, child_frame_id):
+
+
+    def getRobotNamespace( self, child_frame_id):
         #child_frame_id: "robot3/base_link"
         sp = child_frame_id.split('/', 1)
         robotName = sp[0]
-        robotID = robotName[-1]
-        robotID = int(robotID)
-        return robotID
+        return robotName
+
+    def getRobotLocalIndex(self, nameSpace):
+        return self.robot_names.index(nameSpace)
+
 
 
     def getLocalArea( self,  x_robot, y_robot):
@@ -182,7 +192,8 @@ class StigmergyMap:
         if y_end >= self.stigmergyMap_height:
             y_end=self.stigmergyMap_height
 
-        self.stigmergyMap_groundExploration[ y_start:y_end, x_start:x_end] = self.stigmergyMap_groundExploration[ y_start:y_end, x_start:x_end] + np.uint16(self.robotPheromoneStrength)
+        self.stigmergyMap_groundExploration[ y_start:y_end, x_start:x_end] = self.stigmergyMap_groundExploration[ y_start:y_end, x_start:x_end] + np.uint16(self.robotPheromoneStrength) * 0.75
+
 
     def transformMapToPheromones( self, array):
 
@@ -206,7 +217,8 @@ class StigmergyMap:
     def callBackOdom( self, data):
         rawX = data.pose.pose.position.x
         rawY = data.pose.pose.position.y
-        robotID = self.getRobotID(data.child_frame_id)
+        robotNameSpace = self.getRobotNamespace(data.child_frame_id)
+        robotID = self.getRobotLocalIndex(robotNameSpace)
         robot = self.robots[robotID]
         robot.x = rawX
         robot.y = rawY
@@ -245,6 +257,7 @@ class StigmergyMap:
             for i in range(0, self.number_of_robots):
                 localStigmergyMap = self.localMapStore[i]
                 print "ROBOT ID: " + str(i)
+                print localStigmergyMap
                 origShape = np.shape(localStigmergyMap)
                 #has to be flat to send as message (no idea why)
                 localStigmergyMap = localStigmergyMap.flatten()
@@ -284,12 +297,6 @@ class StigmergyMap:
         # robotName = 'robot' + str(j) + '/odom'
         # rospy.Subscriber(robotName, Odometry, callback)
 
-        for i in range(0, self.number_of_robots):
-            robotName_odom = '/robot' + str(i) + '/odom'
-            robotName_map = '/robot' + str(i) + '/map'
-            self.robots.append( Robot(0.5,0.5,i))
-            rospy.Subscriber(robotName_odom, Odometry, self.callBackOdom)
-            rospy.Subscriber(robotName_map, OccupancyGrid, self.callBackMap)
 
 
         while not rospy.is_shutdown():
