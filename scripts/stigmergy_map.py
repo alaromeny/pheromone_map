@@ -1,10 +1,7 @@
 #!/usr/bin/env python2.7
 import rospy
-from std_msgs.msg import String
-from std_msgs.msg import Int16MultiArray, MultiArrayDimension
-from nav_msgs.msg import Odometry
-from nav_msgs.msg import OccupancyGrid
-
+from std_msgs.msg import String, Float32, Int16MultiArray, MultiArrayDimension
+from nav_msgs.msg import Odometry, OccupancyGrid
 
 from scipy.ndimage import gaussian_filter
 import numpy as np
@@ -62,13 +59,11 @@ class StigmergyMap:
         self.robots = []
         self.localMapStore = []
 
-        print "Setting up publishers"
         for i in range(0,  self.number_of_robots):
             self.localMapStore.append([])
             pubName = "localPheromone" + str(i)
             temp = rospy.Publisher(pubName, Int16MultiArray, queue_size=10)
             self.pub.append(temp)
-            print pubName
 
 
     def getRobotID( self, child_frame_id):
@@ -215,7 +210,6 @@ class StigmergyMap:
         self.robot_map.chopGrid()
         self.transformMapToPheromones(self.robot_map.chopMap)
         np.set_printoptions(threshold=np.nan)
-        print "Map Call Back Done!! Map Call Back Done!! Map Call Back Done!! Map Call Back Done!! "
     
     def mapsMissing( self):
         missing = False
@@ -231,18 +225,13 @@ class StigmergyMap:
 
         else:
             local = self.localMapStore[0]
-            # print local
             if self.diffusion_counter == self.diffusion_rate:
                 self.diffuse()
                 self.diffusion_counter = 0
             else: 
                 self.diffusion_counter = self.diffusion_counter + 1
-            # print "------------------------------------------------------"
             for i in range(0, self.number_of_robots):
                 localStigmergyMap = self.localMapStore[i]
-                # print localStigmergyMap
-                # print "------------------------------------------------------"
-
                 origShape = np.shape(localStigmergyMap)
                 #has to be flat to send as message (no idea why)
                 localStigmergyMap = localStigmergyMap.flatten()
@@ -258,12 +247,7 @@ class StigmergyMap:
                 message.layout.dim = [MultiArrayDimension("data", flatShape[0],  origShape[0])]
                 message.data = tmp
                 myPublisher = self.pub[i]
-                # rospy.loginfo("Sent message about robot "+ str(i))
                 myPublisher.publish(message)
-            print "****************************************************************"
-            print "****************************************************************"
-
-
 
     def listener( self):
         # In ROS, nodes are uniquely named. If two nodes with the same
