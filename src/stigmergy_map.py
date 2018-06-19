@@ -61,18 +61,18 @@ class StigmergyMap:
         self.number_of_robots = len(self.robot_names)
         for i in range(0, self.number_of_robots):
             tempRobot_name = str(self.robot_names[i])
-            pubName = "ground/localPheromone/" + tempRobot_name
+            pubName = "localPheromone/" + tempRobot_name
             temp = rospy.Publisher(pubName, Int16MultiArray, queue_size=10)
             self.pub.append(temp)
             print "Created a publisher to: " + str(pubName)
 
             self.robots.append( Robot(0.5,0.5,i,tempRobot_name))
 
-            robotName_odom = tempRobot_name + '/odom'
+            robotName_odom = "/" + tempRobot_name + '/odom'
             rospy.Subscriber(robotName_odom, Odometry, self.callBackOdom)
             print "Created a Subscriber to: " + str(robotName_odom)
 
-            robotName_map = tempRobot_name + '/map'
+            robotName_map = "/" + tempRobot_name + '/map'
             rospy.Subscriber(robotName_map, OccupancyGrid, self.callBackMap)
             print "Created a Subscriber to: " + str(robotName_map)
 
