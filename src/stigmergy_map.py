@@ -19,7 +19,7 @@ class StigmergyMap:
         self.environment_width = rospy.get_param('~env_width', 100)
         self.environment_height = rospy.get_param('~env_height', 100)
         # how often to publish the local maps of each robot (Hz)
-        self.publisher_rate = rospy.get_param('~update_rate', 2)
+        self.publisher_rate = rospy.get_param('~update_rate', 1)
         #This specifies the name of the robot from range(a, number_of_robots)
         #This specifies the size of the stigmergy map
         self.map_resolution = rospy.get_param('~pheromone_resolution', 0.25)
@@ -35,7 +35,7 @@ class StigmergyMap:
         self.robotTrail_width = int( rospy.get_param('~robot_trail_radius',0.4) / self.map_resolution)
         self.robotTrail_height = int( rospy.get_param('~robot_trail_radius',0.4) / self.map_resolution)
 
-        self.robotPheromoneStrength = rospy.get_param('~robot_trail_value', 75)
+        self.robotPheromoneStrength = rospy.get_param('~robot_trail_value', 12700)
         self.wallPheromoneStrength = rospy.get_param('~wall_trail_value', 32700)
         self.maxPheromoneStrength = 15500
 
@@ -143,10 +143,8 @@ class StigmergyMap:
     def findWalls( self, walls):
         for n in range(0,4):
             shape = walls.shape
-            print shape
             midpoint = int(shape[0]/2)
             for i in range(midpoint+1, shape[0]):
-                # print i
                 b = (walls[i] == np.uint16(self.wallPheromoneStrength))
                 wallCount = 0
                 for j in range(0, shape[1]):
@@ -195,7 +193,8 @@ class StigmergyMap:
         if y_end >= self.stigmergyMap_height:
             y_end=self.stigmergyMap_height
 
-        self.stigmergyMap_groundExploration[ y_start:y_end, x_start:x_end] = np.clip((self.stigmergyMap_groundExploration[ y_start:y_end, x_start:x_end] + np.uint16(self.robotPheromoneStrength) * 0.75), 0, self.maxPheromoneStrength)
+        # self.stigmergyMap_groundExploration[ y_start:y_end, x_start:x_end] = np.clip((self.stigmergyMap_groundExploration[ y_start:y_end, x_start:x_end] + np.uint16(self.robotPheromoneStrength) * 0.75), 0, self.maxPheromoneStrength)
+        self.stigmergyMap_groundExploration[ y_start:y_end, x_start:x_end] = self.robotPheromoneStrength
 
 
 
