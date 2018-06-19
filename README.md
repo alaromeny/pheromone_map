@@ -17,12 +17,9 @@ environment_height = 100
 
 - how often we want to update robot's local stigmergy (integer in Hz)
 ```
-publisher_rate = 1
+publisher_rate = 2
 ```
-- number of ground robots (integer)
-```
-number_of_robots = 3
-```
+
 - resolution of the cells in the stigmergy map and  (in meters)
 ```
 map_resolution = 0.25
@@ -46,3 +43,26 @@ diffusion_sigma = 0.75
 diffusion_rate = 10
 ```
 
+
+# TESTING DATA
+
+
+
+#### Data Coming In
+
+
+- Should read all the name spaces of all robots in the environmentand print these to the screen as it's setting up.
+
+-
+
+#### Internal Behaviour
+
+- Pheromones left by robots should be much less than those left by the walls
+- Pheromones left by robots should stack over time
+- Pheromones left by robots should be in a separate array from those left by the walls
+
+
+
+#### Data Going Out
+
+- Pheromones of each robot's local view should be published to a topic called `ground/localPheromone/<robot_name>`
