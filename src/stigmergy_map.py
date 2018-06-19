@@ -56,7 +56,8 @@ class StigmergyMap:
         self.localMapStore = []
 
    
-        self.robot_names = self.get_robot_names()
+        self.robot_names = self.get_robot_names()       
+        self.robot_myName = rospy.get_namespace() 
 
         self.number_of_robots = len(self.robot_names)
         for i in range(0, self.number_of_robots):
@@ -69,10 +70,13 @@ class StigmergyMap:
             self.robots.append( Robot(0.5,0.5,i,tempRobot_name))
 
             robotName_odom = "/" + tempRobot_name + '/odom'
+            robotName_map = "/" + tempRobot_name + '/map'
+            if self.robot_myName == tempRobot_name:
+                 robotName_odom = '/odom'
+                 robotName_map = '/map'
+                 
             rospy.Subscriber(robotName_odom, Odometry, self.callBackOdom)
             print "Created a Subscriber to: " + str(robotName_odom)
-
-            robotName_map = "/" + tempRobot_name + '/map'
             rospy.Subscriber(robotName_map, OccupancyGrid, self.callBackMap)
             print "Created a Subscriber to: " + str(robotName_map)
 
