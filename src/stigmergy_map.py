@@ -10,8 +10,6 @@ import time
 
 from robot import Robot
 from map import Map
-# import imp
-
 
 class StigmergyMap:
 
@@ -70,11 +68,11 @@ class StigmergyMap:
 
             self.robots.append( Robot(0.5,0.5,i,tempRobot_name))
 
-            robotName_odom = tempRobot_name + '/odom'
+            robotName_odom = "/" + tempRobot_name + '/odom'
             rospy.Subscriber(robotName_odom, Odometry, self.callBackOdom)
             print "Created a Subscriber to: " + str(robotName_odom)
 
-            robotName_map = tempRobot_name + '/map'
+            robotName_map = "/" + tempRobot_name + '/map'
             rospy.Subscriber(robotName_map, OccupancyGrid, self.callBackMap)
             print "Created a Subscriber to: " + str(robotName_map)
 

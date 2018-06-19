@@ -53,7 +53,14 @@ diffusion_rate = 10
 
 - Should read all the name spaces of all robots in the environmentand print these to the screen as it's setting up.
 
--
+- Should listen to the following topics
+```
+<robotNameSpace>/odom # this takes in the x,y positions of each robot
+<robotNameSpace>/map # this takes the map in of each robot
+```
+
+
+- 
 
 #### Internal Behaviour
 
@@ -66,3 +73,5 @@ diffusion_rate = 10
 #### Data Going Out
 
 - Pheromones of each robot's local view should be published to a topic called `ground/localPheromone/<robot_name>`
+
+
