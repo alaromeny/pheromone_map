@@ -37,6 +37,7 @@ class StigmergyMap:
 
         self.robotPheromoneStrength = rospy.get_param('~robot_trail_value', 75)
         self.wallPheromoneStrength = rospy.get_param('~wall_trail_value', 32700)
+        self.maxPheromoneStrength = 32700
 
         self.grid_map = OccupancyGrid()
         self.robot_map = Map( self.grid_map)
@@ -192,6 +193,10 @@ class StigmergyMap:
             y_end=self.stigmergyMap_height
 
         self.stigmergyMap_groundExploration[ y_start:y_end, x_start:x_end] = self.stigmergyMap_groundExploration[ y_start:y_end, x_start:x_end] + np.uint16(self.robotPheromoneStrength) * 0.75
+        for x in np.nditer(self.stigmergyMap_groundExploration[ y_start:y_end, x_start:x_end]):
+            if x > self.maxPheromoneStrength:
+                x = self.maxPheromoneStrength
+
 
 
     def transformMapToPheromones( self, array):
