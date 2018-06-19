@@ -16,8 +16,8 @@ class StigmergyMap:
     def __init__(self):
         rospy.init_node('pheromone_map', anonymous=True)
         
-        self.environment_width = rospy.get_param('~env_width', 100)
-        self.environment_height = rospy.get_param('~env_height', 100)
+        self.environment_width = rospy.get_param('~env_width', 300)
+        self.environment_height = rospy.get_param('~env_height', 300)
         # how often to publish the local maps of each robot (Hz)
         self.publisher_rate = rospy.get_param('~update_rate', 1)
         #This specifies the name of the robot from range(a, number_of_robots)
@@ -27,8 +27,8 @@ class StigmergyMap:
         self.stigmergyMap_width = int( self.environment_width /  self.map_resolution)
         self.stigmergyMap_height = int( self.environment_height /  self.map_resolution)
         #This specifies the transform between the middle of the map to the top left corner of the stigmergy map (in metres)
-        self.x_transform = 50
-        self.y_transform = 50
+        self.x_transform = 150
+        self.y_transform = 150
         #This specifies by how many squares in the x and y direction do we want to sense local pheromones
         self.localResolution_x = int( rospy.get_param('~pheromone_sensing_radius', 1) / self.map_resolution) * 2
         self.localResolution_y = int( rospy.get_param('~pheromone_sensing_radius', 1) / self.map_resolution) * 2
