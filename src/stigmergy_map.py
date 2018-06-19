@@ -63,7 +63,7 @@ class StigmergyMap:
         self.number_of_robots = len(self.robot_names)
         for i in range(0, self.number_of_robots):
             tempRobot_name = str(self.robot_names[i])
-            pubName = "localPheromone" + tempRobot_name
+            pubName = "localPheromone/" + tempRobot_name
             temp = rospy.Publisher(pubName, Int16MultiArray, queue_size=10)
             self.pub.append(temp)
             print "Created a publisher to: " + str(pubName)
@@ -240,7 +240,7 @@ class StigmergyMap:
             self.diffusion_counter = self.diffusion_counter + 1
         for i in range(0, self.number_of_robots):
             localStigmergyMap = self.localMapStore[i]
-            
+
             print "-------------------------"
             print "ROBOT ID: " + str(i)
             print localStigmergyMap
