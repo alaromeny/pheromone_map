@@ -16,10 +16,10 @@ class StigmergyMap:
     def __init__(self):
         rospy.init_node('pheromone_map', anonymous=True)
         
-        self.environment_width = rospy.get_param('~env_width', 300)
-        self.environment_height = rospy.get_param('~env_height', 300)
+        self.environment_width = rospy.get_param('~env_width', 100)
+        self.environment_height = rospy.get_param('~env_height', 100)
         # how often to publish the local maps of each robot (Hz)
-        self.publisher_rate = rospy.get_param('~update_rate', 1)
+        self.publisher_rate = rospy.get_param('~update_rate', 2)
         #This specifies the name of the robot from range(a, number_of_robots)
         #This specifies the size of the stigmergy map
         self.map_resolution = rospy.get_param('~pheromone_resolution', 0.25)
@@ -27,13 +27,13 @@ class StigmergyMap:
         self.stigmergyMap_width = int( self.environment_width /  self.map_resolution)
         self.stigmergyMap_height = int( self.environment_height /  self.map_resolution)
         #This specifies the transform between the middle of the map to the top left corner of the stigmergy map (in metres)
-        self.x_transform = 150
-        self.y_transform = 150
+        self.x_transform = 50
+        self.y_transform = 50
         #This specifies by how many squares in the x and y direction do we want to sense local pheromones
-        self.localResolution_x = int( rospy.get_param('~pheromone_sensing_radius', 1) / self.map_resolution) * 2
-        self.localResolution_y = int( rospy.get_param('~pheromone_sensing_radius', 1) / self.map_resolution) * 2
-        self.robotTrail_width = int( rospy.get_param('~robot_trail_radius',0.4) / self.map_resolution)
-        self.robotTrail_height = int( rospy.get_param('~robot_trail_radius',0.4) / self.map_resolution)
+        self.localResolution_x = 12
+        self.localResolution_y = 12
+        self.robotTrail_width = 3
+        self.robotTrail_height = 3
 
         self.robotPheromoneStrength = rospy.get_param('~robot_trail_value', 12700)
         self.wallPheromoneStrength = rospy.get_param('~wall_trail_value', 32700)
@@ -160,6 +160,7 @@ class StigmergyMap:
 
     def storeLocalArea( self, x_robot, y_robot, ID):
         localStigmergyMap = self.getLocalArea( x_robot, y_robot)
+        print localStigmergyMap
         self.localMapStore[ID] = localStigmergyMap
 
 
@@ -229,8 +230,11 @@ class StigmergyMap:
         mapX, mapY = self.transformRoboPosToPheromoneMap( rawX, rawY)
         self.leaveTrail( mapX, mapY)
         self.storeLocalArea( mapX, mapY, robotID)
-        if robotID == 0:
-            local = self.localMapStore[0]
+        print "-------------------------"
+        print "ROBOT ID: " + str(robotID)
+        print mapX, mapY
+        print "-------------------------"
+
             
     def callBackMap( self, data):
         self.robot_map = Map( data)
@@ -248,10 +252,10 @@ class StigmergyMap:
         for i in range(0, self.number_of_robots):
             localStigmergyMap = self.localMapStore[i]
 
-            print "-------------------------"
-            print "ROBOT ID: " + str(i)
-            print localStigmergyMap
-            print "-------------------------"
+            #print "-------------------------"
+            #print "ROBOT ID: " + str(i)
+            #print localStigmergyMap
+            #print "-------------------------"
 
             if localStigmergyMap != []:
                 origShape = np.shape(localStigmergyMap)
