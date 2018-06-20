@@ -160,7 +160,7 @@ class StigmergyMap:
 
     def storeLocalArea( self, x_robot, y_robot, ID):
         localStigmergyMap = self.getLocalArea( x_robot, y_robot)
-        print localStigmergyMap
+        #print localStigmergyMap
         self.localMapStore[ID] = localStigmergyMap
 
 
@@ -230,10 +230,10 @@ class StigmergyMap:
         mapX, mapY = self.transformRoboPosToPheromoneMap( rawX, rawY)
         self.leaveTrail( mapX, mapY)
         self.storeLocalArea( mapX, mapY, robotID)
-        print "-------------------------"
-        print "ROBOT ID: " + str(robotID)
-        print mapX, mapY
-        print "-------------------------"
+        #print "-------------------------"
+        #print "ROBOT ID: " + str(robotID)
+        #print mapX, mapY
+        #print "-------------------------"
 
             
     def callBackMap( self, data):
