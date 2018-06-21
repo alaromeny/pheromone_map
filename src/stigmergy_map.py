@@ -84,6 +84,8 @@ class StigmergyMap:
 
             self.localMapStore.append([])
 
+        np.set_printoptions(threshold=np.nan, linewidth=500)
+
     def get_robot_names( self):
         robot_names = set()
         for topic in rospy.get_published_topics():
@@ -125,7 +127,7 @@ class StigmergyMap:
 
         localStigmergyMap = np.array(self.stigmergyMap_groundExploration[lower_y:upper_y, lower_x:upper_x])
         wallMap = self.stigmergyMap_walls[lower_y:upper_y, lower_x:upper_x]
-        wallMap = self.findWalls(wallMap)
+        #wallMap = self.findWalls(wallMap)
         localStigmergyMap = self.trimWalls(localStigmergyMap, wallMap)
 
         return localStigmergyMap
@@ -160,7 +162,6 @@ class StigmergyMap:
 
     def storeLocalArea( self, x_robot, y_robot, ID):
         localStigmergyMap = self.getLocalArea( x_robot, y_robot)
-        #print localStigmergyMap
         self.localMapStore[ID] = localStigmergyMap
 
 
@@ -232,6 +233,7 @@ class StigmergyMap:
         self.storeLocalArea( mapX, mapY, robotID)
         #print "-------------------------"
         #print "ROBOT ID: " + str(robotID)
+        #print "ODOM CALLBACK"
         #print mapX, mapY
         #print "-------------------------"
 
@@ -240,7 +242,7 @@ class StigmergyMap:
         self.robot_map = Map( data)
         self.robot_map.chopGrid()
         self.transformMapToPheromones(self.robot_map.chopMap)
-        np.set_printoptions(threshold=np.nan)
+        
     
     def publisher( self):
 
@@ -252,10 +254,10 @@ class StigmergyMap:
         for i in range(0, self.number_of_robots):
             localStigmergyMap = self.localMapStore[i]
 
-            #print "-------------------------"
-            #print "ROBOT ID: " + str(i)
-            #print localStigmergyMap
-            #print "-------------------------"
+            # print "-------------------------"
+            # print "ROBOT ID: " + str(i)
+            # print localStigmergyMap
+            # print "-------------------------"
 
             if localStigmergyMap != []:
                 origShape = np.shape(localStigmergyMap)
